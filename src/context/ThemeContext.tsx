@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,8 +13,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const saved = localStorage.getItem('kenlive_theme');
-    if (saved === 'light' || saved === 'dark') return saved;
-    return 'dark'; // Default to dark theme as required
+    if (saved === 'dark' || saved === 'light') return saved;
+    return 'light'; // Always light theme first by default
   });
 
   useEffect(() => {
@@ -23,14 +23,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.add('dark');
       root.classList.remove('light');
     } else {
-      root.classList.add('light');
       root.classList.remove('dark');
+      root.classList.add('light');
     }
     localStorage.setItem('kenlive_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setThemeState(prev => (prev === 'dark' ? 'light' : 'dark'));
+    setThemeState(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
   const setTheme = (newTheme: Theme) => {
@@ -52,3 +52,4 @@ export const useTheme = (): ThemeContextType => {
   return context;
 };
 
+export default ThemeProvider;

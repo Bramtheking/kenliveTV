@@ -38,7 +38,7 @@ export const BottomNav: React.FC = () => {
   return (
     <nav 
       aria-label="Mobile Navigation" 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0B0B0C]/95 dark:bg-[#0B0B0C]/95 light:bg-white/95 backdrop-blur-lg border-t border-[#242430] dark:border-[#242430] light:border-gray-200 px-2 py-1.5 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.5)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0B0B0C]/95 backdrop-blur-lg border-t border-gray-200 dark:border-[#242430] px-2 py-1.5 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)] transition-colors duration-200"
     >
       <div className="grid grid-cols-4 items-center">
         {navItems.map((item) => {
@@ -49,7 +49,7 @@ export const BottomNav: React.FC = () => {
                 href={item.path}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-col items-center justify-center py-1 px-1 rounded-xl text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-[#0B5CAB] transition-colors group min-h-[44px]"
+                className="flex flex-col items-center justify-center py-1 px-1 rounded-xl text-gray-600 dark:text-gray-400 hover:text-[#0B5CAB] transition-colors group min-h-[44px]"
               >
                 <div className="relative">
                   <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform text-[#0B5CAB]" />
@@ -77,7 +77,7 @@ export const BottomNav: React.FC = () => {
               className={`flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-all min-h-[44px] ${
                 isActive
                   ? 'text-[#C30D12] font-bold'
-                  : 'text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-white dark:hover:text-white light:hover:text-black'
+                  : 'text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white'
               }`}
             >
               <div className="relative">
@@ -104,4 +104,3 @@ export const BottomNav: React.FC = () => {
 };
 
 export default BottomNav;
-

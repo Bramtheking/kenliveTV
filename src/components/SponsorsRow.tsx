@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Megaphone, Handshake, ChevronRight, Award } from 'lucide-react';
+import { Megaphone, ChevronRight } from 'lucide-react';
 import { SPONSORS_DATA } from '../config/sponsors';
 
 export const SponsorsRow: React.FC = () => {
   return (
-    <section className="my-10 sm:my-14 border-t border-[#242430] dark:border-[#242430] light:border-gray-200 pt-8 sm:pt-10">
+    <section className="my-10 sm:my-14 border-t border-gray-200 dark:border-[#242430] pt-8 sm:pt-10 transition-colors duration-200">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -13,17 +13,17 @@ export const SponsorsRow: React.FC = () => {
               COMMERCIAL PARTNERS
             </span>
           </div>
-          <h3 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-white dark:text-white light:text-gray-900">
+          <h3 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-gray-950 dark:text-white">
             Proudly Supported By
           </h3>
-          <p className="text-xs text-gray-400 light:text-gray-600">
+          <p className="text-xs text-gray-600 dark:text-gray-400">
             Trusted corporate sponsors powering independent journalism across Kenya
           </p>
         </div>
 
         <Link
           to="/advertise"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1C1C26] dark:bg-[#1C1C26] light:bg-gray-100 hover:bg-[#C30D12] text-white light:text-gray-900 light:hover:text-white font-heading font-bold text-xs uppercase tracking-wider transition-all border border-[#2F2F3D] light:border-gray-300 w-fit"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-[#C30D12] text-gray-900 hover:text-white dark:bg-[#1C1C26] dark:text-white dark:hover:bg-[#C30D12] font-heading font-bold text-xs uppercase tracking-wider transition-all border border-gray-300 dark:border-[#2F2F3D] w-fit shadow-sm"
         >
           <Megaphone className="w-3.5 h-3.5 text-[#C30D12] group-hover:text-white" />
           <span>Advertise With KenLive TV</span>
@@ -36,7 +36,7 @@ export const SponsorsRow: React.FC = () => {
         {SPONSORS_DATA.map((sp) => (
           <div
             key={sp.name}
-            className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-[#131317] dark:bg-[#131317] light:bg-white border border-[#20202B] dark:border-[#20202B] light:border-gray-200 hover:border-gray-600 transition-colors text-center group"
+            className="flex flex-col items-center justify-center p-3.5 rounded-xl bg-white dark:bg-[#131317] border border-gray-200 dark:border-[#20202B] hover:border-gray-400 dark:hover:border-gray-600 transition-colors text-center group shadow-sm"
           >
             <span 
               className="font-heading font-extrabold text-sm sm:text-base tracking-wider uppercase transition-transform group-hover:scale-105"
@@ -44,7 +44,7 @@ export const SponsorsRow: React.FC = () => {
             >
               {sp.logoText}
             </span>
-            <span className="text-[10px] text-gray-500 light:text-gray-400 mt-0.5 truncate max-w-full">
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-full">
               {sp.category}
             </span>
           </div>
@@ -55,4 +55,3 @@ export const SponsorsRow: React.FC = () => {
 };
 
 export default SponsorsRow;
-

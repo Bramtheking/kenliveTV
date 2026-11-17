@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant light (&:where(:not(.dark), .light, .light *));
+
 @theme {
   --color-brand-red: #C30D12;
   --color-brand-red-dark: #A0090E;

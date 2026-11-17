@@ -46,7 +46,7 @@ export const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0B0B0C] dark:bg-[#0B0B0C] light:bg-[#F8F9FA] text-[#F3F4F6] dark:text-[#F3F4F6] light:text-[#111827] transition-colors duration-200">
+    <div className="flex flex-col min-h-screen bg-[#F8F9FA] dark:bg-[#0B0B0C] text-[#111827] dark:text-[#F3F4F6] transition-colors duration-200">
       <ScrollToTop />
       
       {/* Sticky Broadcast Header */}
