@@ -26,7 +26,7 @@ All live settings, streams, and program schedules are organized in dedicated fil
 | File | Purpose | Key Settings |
 |------|---------|--------------|
 | `src/config/stream.ts` | **Live Stream & Radio** | `STREAM_URL` (HLS `.m3u8` feed), `YOUTUBE_FALLBACK_ID` (YouTube Live fallback), `RADIO_STREAM_URL` |
-| `src/config/site.ts` | **Contact & Brand Links** | Phone/WhatsApp (`+254 7XX XXX XXX`), Email (`info@kenlive.co.ke`), Socials (Facebook, X, YouTube, TikTok, Instagram, WhatsApp Channel) |
+| `src/config/site.ts` | **Contact & Brand Links** | Phone/WhatsApp (`+254 703 103677`), Email (`info@kenlive.co.ke`), Socials (Facebook, X, YouTube, TikTok, Instagram, WhatsApp Channel) |
 | `src/config/schedule.ts` | **Weekly TV Schedule** | Monday to Sunday broadcast slots, air times (EAT UTC+3), show titles, presenters |
 | `src/config/shows.ts` | **Show Directory** | Slugs, presenter bios, air schedules, thumbnails, synopses |
 | `src/config/replays.ts` | **Video Clips & Replays** | YouTube clip IDs, titles, view counts, categories |

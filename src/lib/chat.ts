@@ -40,7 +40,7 @@ const INITIAL_MOCK_MESSAGES: ChatMessage[] = [
   {
     id: "pin-1",
     sender: "KenLive Moderator",
-    text: "Karibu KenLive TV Live! Tuma maswali yako ya studio hapa au kwa WhatsApp +254 7XX XXX XXX. Fuata sheria za maoni.",
+    text: "Karibu KenLive TV Live! Tuma maswali yako ya studio hapa au kwa WhatsApp +254 703 103677. Fuata sheria za maoni.",
     timestamp: Date.now() - 3600000,
     avatarColor: "#C30D12",
     badge: "moderator",

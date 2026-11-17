@@ -55,8 +55,8 @@ export const SITE_CONFIG: SiteConfig = {
 
   contact: {
     email: "info@kenlive.co.ke",
-    phone: "+254 7XX XXX XXX", // Replace with your official phone number
-    whatsapp: "+254 7XX XXX XXX", // Replace with your official WhatsApp number
+    phone: "+254 703 103677",
+    whatsapp: "+254 703 103677",
     studioAddress: "KenLive Media Studios, Nairobi, Kenya",
     postalAddress: "P.O. Box 45000-00100, Nairobi, Kenya",
   },

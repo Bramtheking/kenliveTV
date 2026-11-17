@@ -259,7 +259,7 @@ export const Advertise: React.FC = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="+254 7XX XXX XXX"
+                      placeholder="+254 703 103677"
                       className="w-full bg-[#1C1C26] dark:bg-[#1C1C26] light:bg-gray-50 text-white dark:text-white light:text-gray-900 text-xs px-3.5 py-2.5 rounded-xl border border-[#2E2E3E] dark:border-[#2E2E3E] light:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#C30D12] min-h-[44px]"
                     />
                   </div>
