@@ -1,93 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
-import Header from './components/Header';
-import BottomNav from './components/BottomNav';
-import Footer from './components/Footer';
-import SearchModal from './components/SearchModal';
+import { useState, useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+import LoadingScreen from "./components/LoadingScreen";
+import Index from "./pages/Index";
+import ArticleView from "./pages/ArticleView";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
+import ArticleEditor from "./pages/ArticleEditor";
+import AdvertisePage from "./pages/Advertise";
+import NotFound from "./pages/NotFound";
 
-// Pages
-import Home from './pages/Home';
-import WatchLive from './pages/WatchLive';
-import Schedule from './pages/Schedule';
-import Shows from './pages/Shows';
-import ShowDetail from './pages/ShowDetail';
-import News from './pages/News';
-import Replays from './pages/Replays';
-import Advertise from './pages/Advertise';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import NotFound from './pages/NotFound';
+const queryClient = new QueryClient();
 
-// Helper component to scroll to top on page navigation
-const ScrollToTop: React.FC = () => {
+// Must be rendered INSIDE BrowserRouter so useLocation works
+function ScrollToTop() {
   const { pathname } = useLocation();
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
-};
+}
 
-export const AppContent: React.FC = () => {
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  // Global keyboard shortcut to open search (Ctrl+K or Cmd+K)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
+function AppRoutes() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#F8F9FA] dark:bg-[#0B0B0C] text-[#111827] dark:text-[#F3F4F6] transition-colors duration-200">
+    <>
       <ScrollToTop />
-      
-      {/* Sticky Broadcast Header */}
-      <Header onOpenSearch={() => setSearchOpen(true)} />
-
-      {/* Main Page Route View */}
-      <div className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/watch" element={<WatchLive />} />
-          <Route path="/schedule" element={<Schedule />} />
-          <Route path="/shows" element={<Shows />} />
-          <Route path="/shows/:slug" element={<ShowDetail />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/replays" element={<Replays />} />
-          <Route path="/advertise" element={<Advertise />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </div>
-
-      {/* Comprehensive Footer */}
-      <Footer />
-
-      {/* Mobile Fixed Bottom Navigation Bar (Live, Schedule, News, Radio) */}
-      <BottomNav />
-
-      {/* Global Search Modal */}
-      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-    </div>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/article/:id" element={<ArticleView />} />
+        <Route path="/advertise" element={<AdvertisePage />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/articles/new" element={<ArticleEditor />} />
+        <Route path="/admin/articles/edit/:id" element={<ArticleEditor />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   );
-};
+}
 
-export const App: React.FC = () => {
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  if (isLoading) {
+    return <LoadingScreen onLoadingComplete={() => setIsLoading(false)} />;
+  }
+
   return (
-    <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </ThemeProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 };
 

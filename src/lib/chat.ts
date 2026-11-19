@@ -1,11 +1,8 @@
 /**
- * KenLive TV - Live Chat Service Layer
- * =====================================
- * Encapsulates Firebase Realtime Database and interactive Mock fallback.
- * Keeps latest 50 messages, slow mode (5s), pinned messages, and moderation.
+ * KenLive TV – Live Chat Service
+ * Stores messages in Firebase Realtime Database (REST).
+ * Falls back to in-memory mock simulation when not configured.
  */
-
-import { isFirebaseConfigured, getFirebaseConfig, FIREBASE_DB_PATH } from './firebase';
 
 export interface ChatMessage {
   id: string;
@@ -13,7 +10,7 @@ export interface ChatMessage {
   text: string;
   timestamp: number;
   avatarColor: string;
-  badge?: 'presenter' | 'moderator' | null;
+  badge?: "presenter" | "moderator" | null;
   isPinned?: boolean;
 }
 
@@ -22,8 +19,8 @@ export const MAX_CHAT_LENGTH = 200;
 export const MAX_STORED_MESSAGES = 50;
 
 const AVATAR_COLORS = [
-  '#C30D12', '#0B5CAB', '#10B981', '#8B5CF6', 
-  '#F59E0B', '#EC4899', '#06B6D4', '#6366F1'
+  "#C30D12", "#0B5CAB", "#10B981", "#8B5CF6",
+  "#F59E0B", "#EC4899", "#06B6D4", "#6366F1",
 ];
 
 export function getRandomColor(name: string): string {
@@ -31,16 +28,22 @@ export function getRandomColor(name: string): string {
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  const index = Math.abs(hash) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index];
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
-// Initial realistic broadcast chat messages from Kenyan viewers
-const INITIAL_MOCK_MESSAGES: ChatMessage[] = [
+/** Firebase Realtime Database path for chat messages */
+export const FIREBASE_RTDB_PATH = "/chat/main/messages";
+
+/** Read RTDB URL from env (optional – falls back to Firestore project default) */
+function getRtdbUrl(): string | null {
+  return import.meta.env.VITE_FIREBASE_DATABASE_URL || null;
+}
+
+const INITIAL_MOCK: ChatMessage[] = [
   {
     id: "pin-1",
     sender: "KenLive Moderator",
-    text: "Karibu KenLive TV Live! Tuma maswali yako ya studio hapa au kwa WhatsApp +254 703 103677. Fuata sheria za maoni.",
+    text: "Karibu KenLive TV Live! Tuma maswali yako kwa WhatsApp +254 703 103677. Fuata sheria za maoni.",
     timestamp: Date.now() - 3600000,
     avatarColor: "#C30D12",
     badge: "moderator",
@@ -49,21 +52,21 @@ const INITIAL_MOCK_MESSAGES: ChatMessage[] = [
   {
     id: "m-1",
     sender: "Wanjiku_NBO",
-    text: "Picha iko safi sana kutoka Kasarani! Hongera Ken Wakuraya kwa uandishi bora.",
+    text: "Picha iko safi sana! Hongera Ken Wakuraya kwa uandishi bora.",
     timestamp: Date.now() - 300000,
     avatarColor: "#0B5CAB",
   },
   {
     id: "m-2",
     sender: "OtienoJuma",
-    text: "Watching live from Kisumu City. Hii mjadala wa serikali za kaunti ni muhimu sana leo.",
+    text: "Watching live from Kisumu City. Hii mjadala wa serikali ni muhimu sana.",
     timestamp: Date.now() - 240000,
     avatarColor: "#10B981",
   },
   {
     id: "m-3",
     sender: "Ken Wakuraya",
-    text: "Habari za mchana watazamaji! Tunapokea maoni yenu live studioni. Endelea kutazama.",
+    text: "Habari za mchana watazamaji! Tunapokea maoni yenu live studioni.",
     timestamp: Date.now() - 180000,
     avatarColor: "#C30D12",
     badge: "presenter",
@@ -71,59 +74,45 @@ const INITIAL_MOCK_MESSAGES: ChatMessage[] = [
   {
     id: "m-4",
     sender: "Kipchumba_ELD",
-    text: "Eldoret tuko ndani kabisa! Sauti safi na data saver inafanya kazi vizuri kwenye simu yangu.",
+    text: "Eldoret tuko ndani kabisa! Sauti safi na picha nzuri.",
     timestamp: Date.now() - 120000,
     avatarColor: "#F59E0B",
   },
   {
     id: "m-5",
     sender: "AminaMombasa",
-    text: "Mombasa tunafuatilia kwa makini. Tunataka kusikia kuhusu bei ya vyakula sokoni.",
+    text: "Mombasa tunafuatilia kwa makini. Hongera KenLive TV!",
     timestamp: Date.now() - 60000,
     avatarColor: "#8B5CF6",
   },
-  {
-    id: "m-6",
-    sender: "David_Naks",
-    text: "Nakuru tuko tuned in! KenLive ni sauti ya wananchi wa kweli.",
-    timestamp: Date.now() - 25000,
-    avatarColor: "#EC4899",
-  }
 ];
 
-// Simulated incoming chatter pool for lively broadcast demo
-const SIMULATED_STREAM_POOL = [
-  { sender: "Brian_Thika", text: "Swali kwa meza ya uchambuzi: serikali inapanga nini kuhusu bei ya mbolea msimu huu?" },
+const SIM_POOL = [
+  { sender: "Brian_Thika", text: "Swali kwa meza ya uchambuzi: serikali inapanga nini?" },
   { sender: "MamaNjeri", text: "Asante kwa taarifa ya uhakika. KenLive haipendelei upande wowote!" },
   { sender: "Mutua_Machakos", text: "Tazama Live! Machakos tuko locked in." },
-  { sender: "Sarah_Westlands", text: "Broadcast quality is top-notch. Love the clean mobile interface." },
-  { sender: "Hassan_Garissa", text: "Garissa tuko hewani. Asante kwa kuangazia masuala ya kaskazini mwa Kenya." },
-  { sender: "Omondi_Siaya", text: "Good coverage on devolution accountability!" },
+  { sender: "Sarah_Westlands", text: "Broadcast quality is top-notch. Love KenLive TV!" },
+  { sender: "Hassan_Garissa", text: "Garissa tuko hewani. Asante KenLive!" },
+  { sender: "Omondi_Siaya", text: "Great coverage on devolution accountability!" },
 ];
 
 class ChatService {
-  private messages: ChatMessage[] = [...INITIAL_MOCK_MESSAGES];
+  private messages: ChatMessage[] = [...INITIAL_MOCK];
   private listeners: ((messages: ChatMessage[]) => void)[] = [];
-  private simulationInterval: any = null;
-  private isPaused: boolean = false;
-  private reportedMessageIds: Set<string> = new Set();
+  private simulationTimer: any = null;
+  private isPaused = false;
+  private reportedIds = new Set<string>();
 
   constructor() {
-    this.startMockSimulation();
+    this.startSimulation();
   }
 
-  public subscribe(callback: (messages: ChatMessage[]) => void): () => void {
+  subscribe(callback: (messages: ChatMessage[]) => void): () => void {
     this.listeners.push(callback);
     callback(this.getMessages());
-
-    // Connect to real Firebase if configured
-    if (isFirebaseConfigured()) {
-      this.connectFirebase(callback);
-    }
-
-    return () => {
-      this.listeners = this.listeners.filter(cb => cb !== callback);
-    };
+    const rtdb = getRtdbUrl();
+    if (rtdb) this.connectRtdb(rtdb, callback);
+    return () => { this.listeners = this.listeners.filter(cb => cb !== callback); };
   }
 
   private notify() {
@@ -131,80 +120,68 @@ class ChatService {
     this.listeners.forEach(cb => cb(list));
   }
 
-  public getMessages(): ChatMessage[] {
-    return this.messages.filter(m => !this.reportedMessageIds.has(m.id));
+  getMessages(): ChatMessage[] {
+    return this.messages.filter(m => !this.reportedIds.has(m.id));
   }
 
-  public getPinnedMessage(): ChatMessage | undefined {
-    return this.messages.find(m => m.isPinned);
-  }
-
-  public async sendMessage(text: string, sender: string): Promise<boolean> {
+  async sendMessage(text: string, sender: string): Promise<boolean> {
     const trimmed = text.trim();
     if (!trimmed || trimmed.length > MAX_CHAT_LENGTH) return false;
 
-    const newMessage: ChatMessage = {
+    const msg: ChatMessage = {
       id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      sender: sender.trim() || 'Kenyan Viewer',
+      sender: sender.trim() || "Viewer",
       text: trimmed,
       timestamp: Date.now(),
       avatarColor: getRandomColor(sender),
-      badge: sender.toLowerCase().includes('ken wakuraya') ? 'presenter' : null,
+      badge: sender.toLowerCase().includes("ken wakuraya") ? "presenter" : null,
     };
 
-    // If Firebase is configured, push to Realtime Database
-    if (isFirebaseConfigured()) {
+    const rtdb = getRtdbUrl();
+    if (rtdb) {
       try {
-        const { databaseURL } = getFirebaseConfig();
-        await fetch(`${databaseURL}${FIREBASE_DB_PATH}.json`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newMessage)
+        await fetch(`${rtdb}${FIREBASE_RTDB_PATH}.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(msg),
         });
       } catch (err) {
-        console.warn("Firebase sync error, saving locally:", err);
+        console.warn("RTDB sync failed, saving locally:", err);
       }
     }
 
-    this.messages.push(newMessage);
+    this.messages.push(msg);
     if (this.messages.length > MAX_STORED_MESSAGES) {
-      // Keep pinned message if any
       const pinned = this.messages.find(m => m.isPinned);
       this.messages = this.messages.slice(-MAX_STORED_MESSAGES);
       if (pinned && !this.messages.some(m => m.id === pinned.id)) {
         this.messages.unshift(pinned);
       }
     }
-
     this.notify();
     return true;
   }
 
-  public reportMessage(messageId: string): void {
-    this.reportedMessageIds.add(messageId);
+  reportMessage(id: string): void {
+    this.reportedIds.add(id);
     this.notify();
   }
 
-  public togglePause(paused?: boolean): boolean {
+  togglePause(paused?: boolean): boolean {
     this.isPaused = paused !== undefined ? paused : !this.isPaused;
     return this.isPaused;
   }
 
-  public getIsPaused(): boolean {
-    return this.isPaused;
-  }
+  getIsPaused(): boolean { return this.isPaused; }
 
-  // Simulates realistic viewer comments every 18-35 seconds
-  private startMockSimulation() {
-    if (typeof window === 'undefined') return;
-
-    let poolIndex = 0;
-    const scheduleNext = () => {
-      const delay = Math.floor(Math.random() * 15000) + 15000; // 15-30s
-      this.simulationInterval = setTimeout(() => {
-        if (!this.isPaused && !isFirebaseConfigured()) {
-          const item = SIMULATED_STREAM_POOL[poolIndex % SIMULATED_STREAM_POOL.length];
-          poolIndex++;
+  private startSimulation() {
+    if (typeof window === "undefined") return;
+    let idx = 0;
+    const next = () => {
+      const delay = Math.floor(Math.random() * 15000) + 15000;
+      this.simulationTimer = setTimeout(() => {
+        if (!this.isPaused && !getRtdbUrl()) {
+          const item = SIM_POOL[idx++ % SIM_POOL.length];
           this.messages.push({
             id: `sim-${Date.now()}`,
             sender: item.sender,
@@ -212,48 +189,31 @@ class ChatService {
             timestamp: Date.now(),
             avatarColor: getRandomColor(item.sender),
           });
-          if (this.messages.length > MAX_STORED_MESSAGES) {
-            this.messages.splice(1, 1);
-          }
+          if (this.messages.length > MAX_STORED_MESSAGES) this.messages.splice(1, 1);
           this.notify();
         }
-        scheduleNext();
+        next();
       }, delay);
     };
-
-    scheduleNext();
+    next();
   }
 
-  private connectFirebase(callback: (messages: ChatMessage[]) => void) {
-    const { databaseURL } = getFirebaseConfig();
-    if (!databaseURL) return;
-
-    // Fetch initial 50 messages from Firebase REST endpoint
-    fetch(`${databaseURL}${FIREBASE_DB_PATH}.json?orderBy="$key"&limitToLast=50`)
-      .then(res => res.json())
+  private connectRtdb(databaseURL: string, callback: (msgs: ChatMessage[]) => void) {
+    fetch(`${databaseURL}${FIREBASE_RTDB_PATH}.json?orderBy="$key"&limitToLast=50`)
+      .then(r => r.json())
       .then(data => {
-        if (data && typeof data === 'object') {
-          const loaded: ChatMessage[] = Object.keys(data).map(key => ({
-            ...data[key],
-            id: key,
-          }));
+        if (data && typeof data === "object") {
+          const loaded: ChatMessage[] = Object.keys(data).map(key => ({ ...data[key], id: key }));
           if (loaded.length > 0) {
             this.messages = loaded;
             callback(this.getMessages());
           }
         }
       })
-      .catch(err => {
-        console.warn("Could not connect to Firebase database, using local chat store:", err);
-      });
+      .catch(err => console.warn("RTDB load failed, using local mock:", err));
   }
 
-  public destroy() {
-    if (this.simulationInterval) {
-      clearTimeout(this.simulationInterval);
-    }
-  }
+  destroy() { if (this.simulationTimer) clearTimeout(this.simulationTimer); }
 }
 
 export const chatService = new ChatService();
-

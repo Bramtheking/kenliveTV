@@ -1,144 +1,99 @@
-import React, { useEffect, useState } from 'react';
-import { ExternalLink, Newspaper, Clock, ArrowUpRight } from 'lucide-react';
-import { fetchKenLiveNews, NewsArticle } from '../lib/wordpress';
-import { SITE_CONFIG } from '../config/site';
+import { useEffect, useState } from "react";
+import { getArticles } from "@/lib/firebase-utils";
+import ArticleCard from "./ArticleCard";
+import { Button } from "@/components/ui/button";
+import type { Article } from "@/lib/types";
 
-export const NewsSection: React.FC = () => {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+const NewsSection = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+
+  const categories = [
+    { value: undefined, label: "All News" },
+    { value: "POLITICS", label: "Politics" },
+    { value: "BUSINESS", label: "Business" },
+    { value: "SPORTS", label: "Sports" },
+    { value: "CULTURE", label: "Culture" },
+    { value: "WORLD", label: "World" },
+  ];
 
   useEffect(() => {
-    let mounted = true;
-    fetchKenLiveNews().then((res) => {
-      if (mounted) {
-        setArticles(res.articles.slice(0, 6));
-        setLoading(false);
-      }
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    loadArticles();
+  }, [selectedCategory]);
+
+  const loadArticles = async () => {
+    setLoading(true);
+    try {
+      const fetchedArticles = await getArticles(selectedCategory, 12);
+      setArticles(fetchedArticles);
+    } catch (error) {
+      console.error("Error loading articles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section id="news" className="py-6 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">Latest News</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-card rounded-lg p-6 animate-pulse">
+                <div className="bg-muted h-48 rounded mb-4"></div>
+                <div className="bg-muted h-4 rounded mb-2"></div>
+                <div className="bg-muted h-4 rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="my-10 sm:my-14">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[#C30D12]/15 text-[#C30D12]">
-            <Newspaper className="w-5 h-5" />
+    <section id="news" className="py-6 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-foreground mb-4">Latest News</h2>
+          <p className="text-muted-foreground mb-6">
+            Stay updated with the latest news and developments from Kenya and around the world
+          </p>
+          
+          {/* Category Filter */}
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {categories.map((category) => (
+              <Button
+                key={category.label}
+                variant={selectedCategory === category.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.value)}
+                className="transition-all duration-200"
+              >
+                {category.label}
+              </Button>
+            ))}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-heading text-2xl sm:text-3xl font-extrabold uppercase tracking-tight text-gray-950 dark:text-white">
-                Latest From KenLive News
-              </h2>
-              <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#0B5CAB]/10 text-[#0B5CAB] border border-[#0B5CAB]/30 uppercase">
-                KENLIVE.CO.KE
-              </span>
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400">
-              Habari za Uhakika kutoka kwa Waandishi Wetu wa Habari
+        </div>
+        
+        {articles.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground text-lg">
+              {selectedCategory 
+                ? `No articles found in ${categories.find(c => c.value === selectedCategory)?.label} category.`
+                : "No articles available at the moment."
+              }
             </p>
           </div>
-        </div>
-
-        <a
-          href={SITE_CONFIG.network.newsWebsite}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-heading font-bold uppercase tracking-wider px-4 py-2 rounded-xl bg-gray-100 hover:bg-[#C30D12] text-gray-800 hover:text-white dark:bg-[#1C1C26] dark:text-gray-200 dark:hover:bg-[#C30D12] dark:hover:text-white transition-all shadow-sm w-fit border border-gray-200 dark:border-transparent"
-        >
-          <span>Read More on kenlive.co.ke</span>
-          <ArrowUpRight className="w-4 h-4" />
-        </a>
-      </div>
-
-      {/* Grid of 6 Articles or Skeleton Loaders */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div 
-              key={i} 
-              className="rounded-2xl overflow-hidden bg-white dark:bg-[#14141A] border border-gray-200 dark:border-[#242430] animate-pulse p-4 space-y-3"
-            >
-              <div className="aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl" />
-              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/3" />
-              <div className="h-5 bg-gray-200 dark:bg-gray-800 rounded w-5/6" />
-              <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {articles.map((art) => (
-            <a
-              key={art.id}
-              href={art.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group rounded-2xl overflow-hidden bg-white dark:bg-[#14141A] border border-gray-200 dark:border-[#242430] hover:border-[#C30D12]/60 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-            >
-              <div>
-                {/* Thumbnail image with category tag overlay */}
-                <div className="relative aspect-video overflow-hidden bg-black/50">
-                  <img
-                    src={art.featuredImageUrl}
-                    alt={art.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=700&q=80";
-                    }}
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-heading font-extrabold uppercase tracking-wider bg-[#C30D12] text-white shadow-md">
-                      {art.categoryName}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Article Info */}
-                <div className="p-4">
-                  <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 mb-2">
-                    <Clock className="w-3 h-3 text-[#C30D12]" />
-                    <span>{art.timeAgo}</span>
-                    <span>•</span>
-                    <span className="truncate">{art.authorName}</span>
-                  </div>
-
-                  <h3 className="font-heading font-bold text-base sm:text-lg uppercase tracking-tight text-gray-900 dark:text-white group-hover:text-[#C30D12] transition-colors line-clamp-2 leading-snug">
-                    {art.title}
-                  </h3>
-
-                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 line-clamp-2 leading-relaxed">
-                    {art.excerpt}
-                  </p>
-                </div>
-              </div>
-
-              {/* Card Footer */}
-              <div className="px-4 py-3 border-t border-gray-100 dark:border-[#20202B] flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 group-hover:text-[#C30D12] transition-colors">
-                <span>Read Full Story</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
-
-      {/* Bottom Hub CTA */}
-      <div className="mt-8 text-center">
-        <a
-          href={SITE_CONFIG.network.newsWebsite}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#C30D12] to-[#E01C22] text-white font-heading font-extrabold text-sm uppercase tracking-wider shadow-lg shadow-[#C30D12]/30 hover:scale-105 active:scale-95 transition-all"
-        >
-          <span>Explore All Breaking News on kenlive.co.ke</span>
-          <ExternalLink className="w-4 h-4" />
-        </a>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

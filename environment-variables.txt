@@ -1,0 +1,21 @@
+# Firebase Configuration Environment Variables
+# Copy these to your Netlify environment variables
+
+VITE_FIREBASE_API_KEY=AIzaSyA2UlXwk73QKYjvNGK8UNzLG2n8PJhKn8Y
+VITE_FIREBASE_AUTH_DOMAIN=kenlive-58327.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=kenlive-58327
+VITE_FIREBASE_STORAGE_BUCKET=kenlive-58327.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=329627457758
+VITE_FIREBASE_APP_ID=1:329627457758:web:21283c6371fd2f69bc0a4f
+VITE_FIREBASE_MEASUREMENT_ID=G-2DN81FPFWM
+
+# Cloudinary Configuration Environment Variables
+VITE_CLOUDINARY_URL=https://api.cloudinary.com/v1_1/danzbwfz1/image/upload
+VITE_CLOUDINARY_UPLOAD_PRESET=newspaper_unsigned
+
+# Instructions:
+# 1. Go to your Netlify dashboard
+# 2. Navigate to Site settings > Environment variables
+# 3. Add each variable above with its corresponding value
+# 4. Make sure to use the exact names as shown (including the VITE_ prefix)
+# 5. Deploy your site after adding these variables
